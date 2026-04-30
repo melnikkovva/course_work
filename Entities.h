@@ -1,9 +1,6 @@
 #include <vector>
 #include <string>
 
-using Cluster = std::vector<Solution>;
-using DecodedSolution = std::vector<std::pair<int, std::vector<int>>>;
-
 struct Point 
 {
     double x;
@@ -51,3 +48,6 @@ struct Solution
     int rank = 0;
     double crowdingDistance = 0.0;
 };
+
+using Cluster = std::vector<Solution>;
+using DecodedSolution = std::vector<std::pair<int, std::vector<int>>>;

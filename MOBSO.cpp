@@ -283,32 +283,58 @@ void MOBSO::InsertPatients(DecodedSolution& decoded, const std::vector<int>& pat
 
 Solution MOBSO::Crossover(const Solution& parent1, const Solution& parent2)
 {
-    Solution child = parent1;
-
     auto decoded1 = SplitByNurse(parent1.code);
     auto decoded2 = SplitByNurse(parent2.code);
 
-    if (decoded1.empty() || decoded2.empty()) 
+    if (decoded1.empty() || decoded2.empty()) return parent1;
+
+    int nurseId = decoded1[rand() % decoded1.size()].first;
+
+    auto route1 = FindRouteByNurseId(decoded1, nurseId);
+    auto route2 = FindRouteByNurseId(decoded2, nurseId);
+
+    if (!route1 || !route2) return parent1;
+
+    auto lambda1 = GetDifferentPatients(*route1, *route2);
+    auto lambda2 = GetDifferentPatients(*route2, *route1);
+
+    auto child1Decoded = decoded1;
+    auto child2Decoded = decoded2;
+
+    RemovePatientsFromDecoded(child1Decoded, lambda1);
+    RemovePatientsFromDecoded(child2Decoded, lambda2);
+
+    *FindRouteByNurseId(child1Decoded, nurseId) = *route2;
+    *FindRouteByNurseId(child2Decoded, nurseId) = *route1;
+
+    bool ok1 = true;
+    for (int p : lambda1)
     {
-        return child;
+        if (!TryInsertPatient(child1Decoded, p)) ok1 = false;
     }
 
-    int nurseId = SelectRandomNurseId(decoded1);
-
-    std::vector<int>* s1 = FindRouteByNurseId(decoded1, nurseId);
-    std::vector<int>* s2 = FindRouteByNurseId(decoded2, nurseId);
-
-    if (s1 == nullptr || s2 == nullptr) 
+    bool ok2 = true;
+    for (int p : lambda2)
     {
-        return child;
+        if (!TryInsertPatient(child2Decoded, p)) ok2 = false;
     }
 
-    std::vector<int> lambda1 = GetDifferentPatients(*s1, *s2);
-    std::vector<int> lambda2 = GetDifferentPatients(*s2, *s1);
+    Solution child1 = parent1;
+    Solution child2 = parent2;
 
-    RemovePatientsFromDecoded(decoded1, lambda1);
-    InsertPatients(decoded1, lambda2);
+    if (ok1) child1.code = BuildCode(child1Decoded);
 
-    child.code = BuildCode(decoded1);
-    return child;
+    if (ok2) child2.code = BuildCode(child2Decoded);
+
+    if (ok1 && ok2)
+    {
+        if (IsDominate(child1, child2)) return child1;
+        if (IsDominate(child2, child1)) return child2;
+        return rand() % 2 ? child1 : child2;
+    }
+
+    if (ok1) return child1;
+    if (ok2) return child2;
+
+    return parent1;
 }

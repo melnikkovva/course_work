@@ -19,17 +19,14 @@ private:
     std::vector<Nurse> m_nurses;
     std::mt19937 m_gen;
 
-    double FindDistance(Point a, Point b) const;
     bool HasEnoughSkill(SkillLevel caregiverSkill, SkillLevel requiredSkill) const;
     const Patient* FindPatient(int id) const;
     const Nurse* FindNurse(int id) const;
-    const CareCenter* FindCenter(int id) const;
     bool IsPatientId(int id) const;
     bool IsNurseId(int id) const;
     DecodedSolution SplitByNurse(const std::vector<int>& code) const;
     std::vector<int> BuildCode(const DecodedSolution& decoded) const;
     int SkillValue(SkillLevel skill) const;
-    int CenterIndexById(int centerId) const;
     int SelectRandomNurseId(const DecodedSolution& decoded);
     std::vector<int>* FindRouteByNurseId(DecodedSolution& decoded, int nurseId) const;
     std::vector<int> GetDifferentPatients(const std::vector<int>& first, const std::vector<int>& second) const;
