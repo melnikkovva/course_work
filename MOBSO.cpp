@@ -1,340 +1,310 @@
 #include "MOBSO.h"
 #include <algorithm>
-#include <cmath>
-#include <limits>
 #include <numeric>
-#include <stdexcept>
+#include <unordered_set>
+#include "ParetoTools.h"
 
-MOBSO::MOBSO(std::vector<Patient> patients, std::vector<CareCenter> centers) :
-    m_patients(std::move(patients)), m_centers(std::move(centers))
-{
-    for (const auto& center : m_centers) 
+Mobso::Mobso(const Problem& problem, Params params)
+    : m_problem(problem),
+      m_params(params),
+      m_rng(params.seed),
+      m_evaluator(problem),
+      m_decoder(problem) {}
+
+      std::vector<Solution> Mobso::run() 
     {
-        for (const auto& nurse : center.nurses) 
-        {
-            m_nurses.push_back(nurse);
-        }
+    std::vector<Solution> population = InitializePopulation();
+    Evaluate(population);
+
+    std::vector<Solution> archive = ParetoTools::NonDominated(population);
+
+    const int maxEvaluations =
+        m_params.maxFitnessEvaluationsMultiplier * m_problem.customerCount();
+
+    int evaluations = static_cast<int>(population.size());
+
+    while (evaluations < maxEvaluations) {
+        std::vector<Solution> children = MakeChildren(population);
+        Evaluate(children);
+        evaluations += static_cast<int>(children.size());
+
+        population.insert(population.end(), children.begin(), children.end());
+        population = ParetoTools::SelectBest(population, m_params.populationSize);
+
+        archive.insert(archive.end(), population.begin(), population.end());
+        archive = ParetoTools::NonDominated(archive);
     }
+
+    return archive;
 }
 
-int MOBSO::SkillValue(SkillLevel skill) const
+std::vector<Solution> Mobso::InitializePopulation() 
 {
-    return static_cast<int>(skill);
-}
+    std::vector<Solution> population;
+    population.reserve(m_params.populationSize);
 
-bool MOBSO::HasEnoughSkill(SkillLevel caregiverSkill, SkillLevel requiredSkill) const
-{
-    return SkillValue(caregiverSkill) >= SkillValue(requiredSkill);
-}
-
-const Patient* MOBSO::FindPatient(int id) const
-{
-    auto it = std::find_if(m_patients.begin(), m_patients.end(), [&](const Patient& patient) 
+    for (int i = 0; i < m_params.populationSize; ++i) 
     {
-        return patient.id == id;
+        population.push_back(MakeInitialSolution());
+    }
+
+    return population;
+}
+
+Solution Mobso::MakeInitialSolution() 
+{
+    std::vector<int> customerIds(m_problem.customerCount());
+    std::iota(customerIds.begin(), customerIds.end(), 1);
+    std::shuffle(customerIds.begin(), customerIds.end(), m_rng);
+
+    std::vector<Route> routes;
+    routes.reserve(m_problem.caregivers().size());
+
+    for (const auto& caregiver : m_problem.caregivers()) 
+    {
+        routes.emplace_back(caregiver.GetId());
+    }
+
+    std::sort(routes.begin(), routes.end(), [&](const Route& left, const Route& right) 
+    {
+        return m_problem.GetCaregiverById(left.GetCaregiverId()).GetSkill() <
+               m_problem.GetCaregiverById(right.GetCaregiverId()).GetSkill();
     });
 
-    return it == m_patients.end() ? nullptr : &(*it);
-}
-
-const Nurse* MOBSO::FindNurse(int id) const
-{
-    auto it = std::find_if(m_nurses.begin(), m_nurses.end(), [&](const Nurse& nurse) 
+    for (int customerId : customerIds) 
     {
-        return nurse.id == id;
-    });
+        InsertCustomerFeasible(routes, customerId);
+    }
 
-    return it == m_nurses.end() ? nullptr : &(*it);
+    return m_decoder.Encode(routes);
 }
 
-bool MOBSO::IsPatientId(int id) const
+std::vector<Solution> Mobso::MakeChildren(std::vector<Solution> population) 
 {
-    return FindPatient(id) != nullptr;
-}
+    auto fronts = ParetoTools::AssignRanks(population);
 
-bool MOBSO::IsNurseId(int id) const
-{
-    return FindNurse(id) != nullptr;
-}
-
-DecodedSolution MOBSO::SplitByNurse(const std::vector<int>& code) const
-{
-    DecodedSolution decoded;
-    int currentIndex = -1;
-
-    for (int id : code) 
+    for (const auto& front : fronts) 
     {
-        if (IsNurseId(id)) 
+        ParetoTools::AssignCrowdingDistance(population, front);
+    }
+
+    std::vector<Solution> children;
+    children.reserve(m_params.populationSize);
+
+    while (static_cast<int>(children.size()) < m_params.populationSize) 
+    {
+        const bool useOneCluster = fronts.size() > 1 && Random01() < m_params.pg;
+
+        if (useOneCluster) 
         {
-            decoded.push_back({id, {}});
-            currentIndex = static_cast<int>(decoded.size()) - 1;
+            const int frontId = SelectFront(fronts);
+            const Solution& base = SelectFromFront(population, fronts[frontId]);
+            children.push_back(Mutate(base));
         } 
-        else if (IsPatientId(id) && currentIndex >= 0) 
+        else 
         {
-            decoded[currentIndex].second.push_back(id);
+            const Solution& first = population[RandomIndex(population.size())];
+            const Solution& second = population[RandomIndex(population.size())];
+            children.push_back(Crossover(first, second));
         }
     }
 
-    return decoded;
+    return children;
 }
 
-std::vector<int> MOBSO::BuildCode(const DecodedSolution& decoded) const
+Solution Mobso::Mutate(const Solution& parent) 
 {
-    std::vector<int> code;
+    auto routes = m_decoder.Decode(parent);
+    std::vector<int> candidateRouteIndexes;
 
-    for (const auto& item : decoded) 
+    for (int i = 0; i < static_cast<int>(routes.size()); ++i) 
     {
-        code.push_back(item.first);
-        code.insert(code.end(), item.second.begin(), item.second.end());
-    }
-
-    return code;
-}
-
-bool MOBSO::CanAssignPatientToNurse(int nurseId, int patientId, int currentWorkload) const
-{
-    const Patient* patient = FindPatient(patientId);
-    const Nurse* nurse = FindNurse(nurseId);
-
-    if (patient == nullptr || nurse == nullptr) 
-    {
-        return false;
-    }
-
-    return HasEnoughSkill(nurse->skill, patient->requiredSkill) && currentWorkload < nurse->maxWorkload;
-}
-
-bool MOBSO::IsDominate(const Solution& a, const Solution& b) const
-{
-    const bool notWorse = a.costs.serviceCost <= b.costs.serviceCost
-                         && a.costs.delayCost <= b.costs.delayCost;
-
-    const bool strictlyBetter = a.costs.serviceCost < b.costs.serviceCost 
-                                || a.costs.delayCost < b.costs.delayCost;
-    return notWorse && strictlyBetter;
-}
-
-std::vector<Cluster> MOBSO::CreateClusters(std::vector<Solution> population) const
-{
-    std::vector<Cluster> clusters;
-    int currentRank = 0;
-
-    while (!population.empty()) 
-    {
-        Cluster front;
-
-        for (const auto& candidate : population) 
+        if (routes[i].GetSize() >= 2) 
         {
-            bool dominatedByAny = false;
+            candidateRouteIndexes.push_back(i);
+        }
+    }
 
-            for (const auto& other : population) 
+    if (candidateRouteIndexes.empty()) 
+    {
+        return parent;
+    }
+
+    Route& route = routes[candidateRouteIndexes[RandomIndex(candidateRouteIndexes.size())]];
+    auto& customers = route.GetCustomers();
+
+    const int from = RandomIndex(customers.size());
+    const int to = RandomIndex(customers.size());
+
+    if (Random01() < 0.5) 
+    {
+        std::swap(customers[from], customers[to]);
+    } 
+    else 
+    {
+        const int customer = customers[from];
+        customers.erase(customers.begin() + from);
+        customers.insert(customers.begin() + to, customer);
+    }
+
+    return m_decoder.Encode(routes);
+}
+
+Solution Mobso::Crossover(const Solution& firstParent, const Solution& secondParent) 
+{
+    auto firstRoutes = m_decoder.Decode(firstParent);
+    auto secondRoutes = m_decoder.Decode(secondParent);
+
+    if (firstRoutes.empty() || secondRoutes.empty()) 
+    {
+        return firstParent;
+    }
+
+    const int routeId = RandomIndex(std::min(firstRoutes.size(), secondRoutes.size()));
+
+    std::vector<int> onlyFirst = RouteDifference(firstRoutes[routeId], secondRoutes[routeId]);
+    std::vector<int> onlySecond = RouteDifference(secondRoutes[routeId], firstRoutes[routeId]);
+
+    RemoveCustomers(firstRoutes, onlyFirst);
+    RemoveCustomers(secondRoutes, onlySecond);
+
+    for (int customerId : onlySecond) 
+    {
+        InsertCustomerFeasible(firstRoutes, customerId);
+    }
+
+    for (int customerId : onlyFirst) 
+    {
+        InsertCustomerFeasible(secondRoutes, customerId);
+    }
+
+    Solution firstChild = m_decoder.Encode(firstRoutes);
+    Solution secondChild = m_decoder.Encode(secondRoutes);
+
+    firstChild.SetObjectives(m_evaluator.Evaluate(firstChild));
+    secondChild.SetObjectives(m_evaluator.Evaluate(secondChild));
+    if (Dominates(firstChild.GetObjectives(), secondChild.GetObjectives())) 
+    {
+        return firstChild;
+    }
+
+    if (Dominates(secondChild.GetObjectives(), firstChild.GetObjectives())) 
+    {
+        return secondChild;
+    }
+
+    return Random01() < 0.5 ? firstChild : secondChild;
+}
+
+void Mobso::Evaluate(std::vector<Solution>& population) const 
+{
+    for (auto& solution : population) 
+    {
+        solution.SetObjectives(m_evaluator.Evaluate(solution));
+    }
+}
+
+void Mobso::InsertCustomerFeasible(std::vector<Route>& routes, int customerId) 
+{
+    const Customer& customer = m_problem.GetCustomerById(customerId);
+    std::vector<int> feasibleRouteIndexes;
+
+    for (int i = 0; i < static_cast<int>(routes.size()); ++i) 
+    {
+        const Caregiver& caregiver = m_problem.GetCaregiverById(routes[i].GetCaregiverId());
+
+        const bool skillOk = caregiver.GetSkill() >= customer.GetRequiredSkill();
+        const bool workloadOk = routes[i].GetSize() < m_problem.maxWorkload();
+
+        if (skillOk && workloadOk) feasibleRouteIndexes.push_back(i);
+    }
+
+    const int routeId = feasibleRouteIndexes.empty()
+        ? RandomIndex(routes.size())
+        : feasibleRouteIndexes[RandomIndex(feasibleRouteIndexes.size())];
+
+    auto& customers = routes[routeId].GetCustomers();
+    const int position = customers.empty() ? 0 : RandomIndex(customers.size() + 1);
+    customers.insert(customers.begin() + position, customerId);
+}
+
+int Mobso::SelectFront(const std::vector<std::vector<int>>& fronts) 
+{
+    const int first = RandomIndex(fronts.size());
+    const int second = RandomIndex(fronts.size());
+    return std::min(first, second);
+}
+
+const Solution& Mobso::SelectFromFront(
+    const std::vector<Solution>& population,
+    const std::vector<int>& front) 
+{
+
+    if (Random01() < m_params.po) 
+    {
+        int best = front.front();
+
+        for (int index : front) 
+        {
+            if (population[index].GetCrowdingDistance() > population[best].GetCrowdingDistance()) 
             {
-                if (&candidate != &other && IsDominate(other, candidate)) 
+                best = index;
+            }
+        }
+
+        return population[best];
+    }
+    return population[front[RandomIndex(front.size())]];
+}
+
+double Mobso::Random01() 
+{
+    return std::uniform_real_distribution<double>(0.0, 1.0)(m_rng);
+}
+
+int Mobso::RandomIndex(size_t size) 
+{
+    return std::uniform_int_distribution<int>(0, static_cast<int>(size) - 1)(m_rng);
+}
+
+std::vector<int> Mobso::RouteDifference(const Route& left, const Route& right) 
+{
+    std::unordered_set<int> rightCustomers(
+        right.GetCustomers().begin(),
+        right.GetCustomers().end()
+    );
+
+    std::vector<int> result;
+
+    for (int customerId : left.GetCustomers()) 
+    {
+        if (!rightCustomers.count(customerId)) 
+        {
+            result.push_back(customerId);
+        }
+    }
+
+    return result;
+}
+
+void Mobso::RemoveCustomers(std::vector<Route>& routes, const std::vector<int>& customers) 
+{
+    std::unordered_set<int> customersToRemove(customers.begin(), customers.end());
+
+    for (auto& route : routes) 
+    {
+        auto& routeCustomers = route.GetCustomers();
+
+        routeCustomers.erase(
+            std::remove_if(
+                routeCustomers.begin(),
+                routeCustomers.end(),
+                [&](int customerId) 
                 {
-                    dominatedByAny = true;
-                    break;
+                    return customersToRemove.count(customerId) > 0;
                 }
-            }
-
-            if (!dominatedByAny) 
-            {
-                Solution ranked = candidate;
-                ranked.rank = currentRank;
-                front.push_back(ranked);
-            }
-        }
-        if (front.empty()) 
-        {
-            break;
-        }
-        clusters.push_back(front);
-        population.erase(
-            std::remove_if(population.begin(), population.end(), [&](const Solution& solution) 
-            {
-                return std::any_of(front.begin(), front.end(), [&](const Solution& selected) 
-                {
-                    return solution.code == selected.code;
-                });
-            }),
-            population.end()
-        );
-        ++currentRank;
-    }
-
-    return clusters;
-}
-
-std::vector<int> MOBSO::FindMutableRoutes(const DecodedSolution& decoded) const
-{
-    std::vector<int> indexes;
-
-    for (int i = 0; i < static_cast<int>(decoded.size()); ++i) 
-    {
-        if (decoded[i].second.size() >= 2) 
-        {
-            indexes.push_back(i);
-        }
-    }
-
-    return indexes;
-}
-
-void MOBSO::Mutate(Solution& solution)
-{
-    auto decoded = SplitByNurse(solution.code);
-    std::vector<int> indexes = FindMutableRoutes(decoded);
-
-    if (indexes.empty()) return;
-
-    std::uniform_int_distribution<int> routeDist(0, static_cast<int>(indexes.size()) - 1);
-
-    int routeIndex = indexes[routeDist(m_gen)];
-    std::vector<int>& route = decoded[routeIndex].second;
-
-    std::uniform_int_distribution<int> patientDist(0, static_cast<int>(route.size()) - 1);
-
-    int first = patientDist(m_gen);
-    int second = patientDist(m_gen);
-
-    while (second == first) 
-    {
-        second = patientDist(m_gen);
-    }
-
-    std::swap(route[first], route[second]);
-
-    solution.code = BuildCode(decoded);
-}
-
-int MOBSO::SelectRandomNurseId(const DecodedSolution& decoded)
-{
-    std::uniform_int_distribution<int> nurseDist(0, static_cast<int>(decoded.size()) - 1);
-    return decoded[nurseDist(m_gen)].first;
-}
-
-std::vector<int>* MOBSO::FindRouteByNurseId(DecodedSolution& decoded, int nurseId) const
-{
-    for (auto& route : decoded) 
-    {
-        if (route.first == nurseId) 
-        {
-            return &route.second;
-        }
-    }
-
-    return nullptr;
-}
-
-std::vector<int> MOBSO::GetDifferentPatients(const std::vector<int>& first, const std::vector<int>& second) const
-{
-    std::vector<int> differentPatients;
-
-    for (int patientId : first) 
-    {
-        if (std::find(second.begin(), second.end(), patientId) == second.end()) 
-        {
-            differentPatients.push_back(patientId);
-        }
-    }
-
-    return differentPatients;
-}
-
-void MOBSO::RemovePatientsFromDecoded(DecodedSolution& decoded,
-                                      const std::vector<int>& patients) const
-{
-    for (auto& route : decoded) 
-    {
-        route.second.erase(
-            std::remove_if(route.second.begin(), route.second.end(), [&](int patientId) 
-            {
-                return std::find(patients.begin(), patients.end(), patientId) != patients.end();
-            }),
-            route.second.end()
+            ),
+            routeCustomers.end()
         );
     }
-}
-
-bool MOBSO::TryInsertPatient(DecodedSolution& decoded, int patientId)
-{
-    std::vector<int> order(decoded.size());
-    std::iota(order.begin(), order.end(), 0);
-    std::shuffle(order.begin(), order.end(), m_gen);
-
-    for (int index : order) 
-    {
-        if (CanAssignPatientToNurse(decoded[index].first, patientId, static_cast<int>(decoded[index].second.size()))) 
-        {
-            decoded[index].second.push_back(patientId);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-void MOBSO::InsertPatients(DecodedSolution& decoded, const std::vector<int>& patients)
-{
-    for (int patientId : patients) 
-    {
-        TryInsertPatient(decoded, patientId);
-    }
-}
-
-Solution MOBSO::Crossover(const Solution& parent1, const Solution& parent2)
-{
-    auto decoded1 = SplitByNurse(parent1.code);
-    auto decoded2 = SplitByNurse(parent2.code);
-
-    if (decoded1.empty() || decoded2.empty()) return parent1;
-
-    int nurseId = decoded1[rand() % decoded1.size()].first;
-
-    auto route1 = FindRouteByNurseId(decoded1, nurseId);
-    auto route2 = FindRouteByNurseId(decoded2, nurseId);
-
-    if (!route1 || !route2) return parent1;
-
-    auto lambda1 = GetDifferentPatients(*route1, *route2);
-    auto lambda2 = GetDifferentPatients(*route2, *route1);
-
-    auto child1Decoded = decoded1;
-    auto child2Decoded = decoded2;
-
-    RemovePatientsFromDecoded(child1Decoded, lambda1);
-    RemovePatientsFromDecoded(child2Decoded, lambda2);
-
-    *FindRouteByNurseId(child1Decoded, nurseId) = *route2;
-    *FindRouteByNurseId(child2Decoded, nurseId) = *route1;
-
-    bool ok1 = true;
-    for (int p : lambda1)
-    {
-        if (!TryInsertPatient(child1Decoded, p)) ok1 = false;
-    }
-
-    bool ok2 = true;
-    for (int p : lambda2)
-    {
-        if (!TryInsertPatient(child2Decoded, p)) ok2 = false;
-    }
-
-    Solution child1 = parent1;
-    Solution child2 = parent2;
-
-    if (ok1) child1.code = BuildCode(child1Decoded);
-
-    if (ok2) child2.code = BuildCode(child2Decoded);
-
-    if (ok1 && ok2)
-    {
-        if (IsDominate(child1, child2)) return child1;
-        if (IsDominate(child2, child1)) return child2;
-        return rand() % 2 ? child1 : child2;
-    }
-
-    if (ok1) return child1;
-    if (ok2) return child2;
-
-    return parent1;
 }
