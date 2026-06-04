@@ -1,7 +1,6 @@
 #pragma once
-
 #include <vector>
-#include "Solution.h"
+#include "../Solution/Solution.h"
 
 class ParetoTools 
 {

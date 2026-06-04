@@ -1,5 +1,4 @@
 #include "ParetoTools.h"
-
 #include <algorithm>
 #include <cmath>
 #include <limits>

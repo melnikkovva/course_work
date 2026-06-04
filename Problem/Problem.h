@@ -1,9 +1,8 @@
 #pragma once
-
 #include <vector>
-#include "CareCenter.h"
-#include "Caregiver.h"
-#include "Customer.h"
+#include "../CareCenter/CareCenter.h"
+#include "../CareGiver/CareGiver.h"
+#include "../Customer/Customer.h"
 
 class Problem 
 {

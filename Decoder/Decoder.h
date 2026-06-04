@@ -1,8 +1,8 @@
 #pragma once
 #include <vector>
-#include "Problem.h"
-#include "Route.h"
-#include "Solution.h"
+#include "../Problem/Problem.h"
+#include "../Route/Route.h"
+#include "../Solution/Solution.h"
 
 class Decoder 
 {

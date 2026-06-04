@@ -1,5 +1,4 @@
 #include "Evaluator.h"
-
 #include <algorithm>
 #include <cmath>
 #include <unordered_map>

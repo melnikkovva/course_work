@@ -1,9 +1,8 @@
 #pragma once
-
-#include "Decoder.h"
-#include "Objectives.h"
-#include "Problem.h"
-#include "Solution.h"
+#include "../Decoder/Decoder.h"
+#include "../Objectives/Objectives.h"
+#include "../Problem/Problem.h"
+#include "../Solution/Solution.h"
 
 class Evaluator 
 {

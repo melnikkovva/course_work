@@ -1,8 +1,7 @@
 #pragma once
-
 #include <limits>
 #include <vector>
-#include "Objectives.h"
+#include "../Objectives/Objectives.h"
 
 class Solution 
 {

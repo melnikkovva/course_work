@@ -1,13 +1,12 @@
 #pragma once
-
 #include <cstdint>
 #include <random>
 #include <vector>
-#include "Decoder.h"
-#include "Evaluator.h"
-#include "Problem.h"
-#include "Route.h"
-#include "Solution.h"
+#include "../Decoder/Decoder.h"
+#include "../Evaluator/Evaluator.h"
+#include "../Problem/Problem.h"
+#include "../Route/Route.h"
+#include "../Solution/Solution.h"
 
 class Mobso 
 {
