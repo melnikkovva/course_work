@@ -15,6 +15,11 @@ std::vector<int>& Route::GetCustomers()
     return m_customers; 
 }
 
+const std::vector<int>& Route::GetCustomers() const 
+{ 
+    return m_customers; 
+}
+
 bool Route::IsEmpty() const 
 { 
     return m_customers.empty(); 

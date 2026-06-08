@@ -1,4 +1,5 @@
 #pragma once
+#include <limits>
 #include "../Decoder/Decoder.h"
 #include "../Objectives/Objectives.h"
 #include "../Problem/Problem.h"

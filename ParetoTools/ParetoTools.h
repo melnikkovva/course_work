@@ -9,6 +9,7 @@ public:
     static void AssignCrowdingDistance(std::vector<Solution>& population, const std::vector<int>& front);
     static std::vector<Solution> SelectBest(std::vector<Solution> candidates, int limit);
     static std::vector<Solution> NonDominated(const std::vector<Solution>& solutions);
+    static std::vector<Solution> ParetoTools::Unique(const std::vector<Solution>& solutions);
 
 private:
     static double ObjectiveValue(const Solution& solution, bool serviceCostObjective);

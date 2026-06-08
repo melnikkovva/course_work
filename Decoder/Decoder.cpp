@@ -22,3 +22,20 @@ std::vector<Route> Decoder::Decode(const Solution& solution) const
     }
     return routes;
 }
+
+Solution Decoder::Encode(const std::vector<Route>& routes) const 
+{
+    std::vector<int> chromosome;
+    
+    for (const Route& route : routes) 
+    {
+        chromosome.push_back(route.GetCaregiverId());
+        
+        for (int customerId : route.GetCustomers()) 
+        {
+            chromosome.push_back(customerId);
+        }
+    }
+    
+    return Solution(chromosome);
+}

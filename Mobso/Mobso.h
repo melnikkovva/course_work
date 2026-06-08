@@ -13,8 +13,8 @@ class Mobso
 public:
     struct Params 
     {
-        int populationSize = 80;
-        int maxFitnessEvaluationsMultiplier = 100;
+        int populationSize = 10;
+        int maxEvaluations = 10000;
         double pg = 0.8;
         double po = 0.6;
         double pt = 0.4;
@@ -31,8 +31,11 @@ private:
     Evaluator m_evaluator;
     Decoder m_decoder;
 
+    static constexpr double InfeasiblePenalty = 1e9;
     std::vector<Solution> InitializePopulation();
-    Solution MakeInitialSolution();
+    Solution MakeFeasibleInitialSolution();
+    Solution MakeRandomInitialSolution();
+    void RemoveInfeasible(std::vector<Solution>& solutions) const;
     std::vector<Solution> MakeChildren(std::vector<Solution> population);
     Solution Mutate(const Solution& parent);
     Solution Crossover(const Solution& firstParent, const Solution& secondParent);
@@ -40,6 +43,9 @@ private:
     void InsertCustomerFeasible(std::vector<Route>& routes, int customerId);
     int SelectFront(const std::vector<std::vector<int>>& fronts);
     const Solution& SelectFromFront(const std::vector<Solution>& population, const std::vector<int>& front);
+    void Mobso::LogPopulation(
+    const std::string& title,
+    const std::vector<Solution>& population) const;
     double Random01();
     int RandomIndex(size_t size);
     static std::vector<int> RouteDifference(const Route& left, const Route& right);

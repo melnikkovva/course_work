@@ -134,6 +134,34 @@ std::vector<Solution> ParetoTools::NonDominated(const std::vector<Solution>& sol
     return result;
 }
 
+std::vector<Solution> ParetoTools::Unique(const std::vector<Solution>& solutions)
+{
+    std::vector<Solution> result;
+
+    for (const auto& s : solutions)
+    {
+        bool exists = false;
+
+        for (const auto& r : result)
+        {
+            if (s.GetChromosome() == r.GetChromosome() &&
+                std::abs(s.GetObjectives().serviceCost - r.GetObjectives().serviceCost) < 1e-9 &&
+                std::abs(s.GetObjectives().delayCost - r.GetObjectives().delayCost) < 1e-9)
+            {
+                exists = true;
+                break;
+            }
+        }
+
+        if (!exists)
+        {
+            result.push_back(s);
+        }
+    }
+
+    return result;
+}
+
 double ParetoTools::ObjectiveValue(const Solution& solution, bool serviceCostObjective) 
 {
     return serviceCostObjective

@@ -7,6 +7,11 @@ std::vector<int>& Solution::GetChromosome()
     return m_chromosome; 
 }
 
+const std::vector<int>& Solution::GetChromosome() const 
+{ 
+    return m_chromosome; 
+}
+
 const Objectives& Solution::GetObjectives() const 
 { 
     return m_objectives; 
