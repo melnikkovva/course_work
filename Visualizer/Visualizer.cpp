@@ -131,7 +131,7 @@ static std::vector<Solution> RunOptimization(const Problem& problem)
     Mobso::Params params;
 
     params.populationSize = 100;
-    params.maxEvaluations = 1000;
+    params.maxEvaluations = 10000;
     params.pg = 0.6;
     params.po = 0.6;
     params.pt = 0.2;
