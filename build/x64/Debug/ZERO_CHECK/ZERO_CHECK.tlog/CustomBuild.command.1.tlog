@@ -1,0 +1,10 @@
+^C:\USERS\MELNI\DESKTOP\COURSE_WORK\BUILD\CMAKEFILES\F74036A1EC4AF1731F555505F06FB124\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/melni/Desktop/course_work -BC:/Users/melni/Desktop/course_work/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/melni/Desktop/course_work/build/HomeCareScheduler.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

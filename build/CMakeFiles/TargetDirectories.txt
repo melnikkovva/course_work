@@ -1,0 +1,3 @@
+C:/Users/melni/Desktop/course_work/build/CMakeFiles/HomeCareScheduler.dir
+C:/Users/melni/Desktop/course_work/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/melni/Desktop/course_work/build/CMakeFiles/ZERO_CHECK.dir

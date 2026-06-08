@@ -68,3 +68,63 @@ double Problem::CountWayCenterCustomer(int centerId, int customerId) const
 
     return std::hypot(center.GetX() - customer.GetX(), center.GetY() - customer.GetY());
 }
+
+void Problem::AddCustomer(const Customer& customer)
+{
+    m_customers.push_back(customer);
+}
+
+void Problem::RemoveCustomerById(int id)
+{
+    m_customers.erase(
+        std::remove_if(
+            m_customers.begin(),
+            m_customers.end(),
+            [id](const Customer& c)
+            {
+                return c.GetId() == id;
+            }
+        ),
+        m_customers.end()
+    );
+}
+
+void Problem::AddCaregiver(const Caregiver& caregiver)
+{
+    m_caregivers.push_back(caregiver);
+}
+
+void Problem::RemoveCaregiverById(int id)
+{
+    m_caregivers.erase(
+        std::remove_if(
+            m_caregivers.begin(),
+            m_caregivers.end(),
+            [id](const Caregiver& c)
+            {
+                return c.GetId() == id;
+            }
+        ),
+        m_caregivers.end()
+    );
+}
+
+void Problem::AddCenter(const CareCenter& center)
+{
+    m_centers.push_back(center);
+}
+
+void Problem::RemoveCenterById(int id)
+{
+    m_centers.erase(
+        std::remove_if(
+            m_centers.begin(),
+            m_centers.end(),
+            [id](const CareCenter& c)
+            {
+                return c.GetId() == id;
+            }
+        ),
+        m_centers.end()
+    );
+}
