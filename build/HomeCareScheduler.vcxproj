@@ -374,9 +374,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="C:\Users\melni\Desktop\course_work\Solution\Solution.cpp" />
     <ClCompile Include="C:\Users\melni\Desktop\course_work\Decoder\Decoder.cpp" />
     <ClCompile Include="C:\Users\melni\Desktop\course_work\Evaluator\Evaluator.cpp" />
+    <ClCompile Include="C:\Users\melni\Desktop\course_work\ProblemLoader\ProblemLoader.cpp" />
     <ClCompile Include="C:\Users\melni\Desktop\course_work\ParetoTools\ParetoTools.cpp" />
     <ClCompile Include="C:\Users\melni\Desktop\course_work\Mobso\Mobso.cpp" />
-    <ClCompile Include="C:\Users\melni\Desktop\course_work\Tests\BasicTests.cpp" />
     <ClCompile Include="C:\Users\melni\Desktop\course_work\Tests\TestBigProblem.cpp" />
     <ClCompile Include="C:\Users\melni\Desktop\course_work\Tests\TestLineProblem.cpp" />
     <ClCompile Include="C:\Users\melni\Desktop\course_work\Visualizer\Visualizer.cpp" />

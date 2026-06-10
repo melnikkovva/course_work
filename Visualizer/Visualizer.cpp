@@ -13,112 +13,6 @@
 #include "../ProblemLoader/ProblemLoader.h"
 #include <optional>
 
-static void AddCustomerFromConsole(Problem& problem)
-{
-    int id;
-    double x, y;
-    int requiredSkill;
-    double serviceTime;
-    double appointmentTime;
-    double baseRate;
-
-    std::cout << "Customer id: ";
-    std::cin >> id;
-
-    std::cout << "x y: ";
-    std::cin >> x >> y;
-
-    std::cout << "required skill: ";
-    std::cin >> requiredSkill;
-
-    std::cout << "service time: ";
-    std::cin >> serviceTime;
-
-    std::cout << "appointment time: ";
-    std::cin >> appointmentTime;
-
-    std::cout << "base rate: ";
-    std::cin >> baseRate;
-
-    problem.AddCustomer(
-        Customer(
-            id,
-            x,
-            y,
-            requiredSkill,
-            serviceTime,
-            appointmentTime,
-            baseRate
-        )
-    );
-}
-
-static void RemoveCustomerFromConsole(Problem& problem)
-{
-    int id;
-
-    std::cout << "Customer id to remove: ";
-    std::cin >> id;
-
-    problem.RemoveCustomerById(id);
-}
-
-static void AddCaregiverFromConsole(Problem& problem)
-{
-    int id;
-    int centerId;
-    int skill;
-
-    std::cout << "Caregiver id: ";
-    std::cin >> id;
-
-    std::cout << "center id: ";
-    std::cin >> centerId;
-
-    std::cout << "skill: ";
-    std::cin >> skill;
-
-    problem.AddCaregiver(Caregiver(id, centerId, skill));
-}
-
-static void RemoveCaregiverFromConsole(Problem& problem)
-{
-    int id;
-
-    std::cout << "Caregiver id to remove: ";
-    std::cin >> id;
-
-    problem.RemoveCaregiverById(id);
-}
-
-static void AddCenterFromConsole(Problem& problem)
-{
-    int id;
-    double x, y;
-    int capacity;
-
-    std::cout << "Center id: ";
-    std::cin >> id;
-
-    std::cout << "x y: ";
-    std::cin >> x >> y;
-
-    std::cout << "capacity: ";
-    std::cin >> capacity;
-
-    problem.AddCenter(CareCenter(id, x, y, capacity));
-}
-
-static void RemoveCenterFromConsole(Problem& problem)
-{
-    int id;
-
-    std::cout << "Center id to remove: ";
-    std::cin >> id;
-
-    problem.RemoveCenterById(id);
-}
-
 enum class ScreenState
 {
     FileInput,
@@ -130,12 +24,12 @@ static std::vector<Solution> RunOptimization(const Problem& problem)
 {
     Mobso::Params params;
 
-    params.populationSize = 100;
-    params.maxEvaluations = 10000;
-    params.pg = 0.6;
-    params.po = 0.6;
-    params.pt = 0.2;
-    params.seed = 42;
+    params.populationSize = POPULATION_SIZE;
+    params.maxEvaluations = MAX_EVALUATIONS;
+    params.pg = PG;
+    params.po = PO;
+    params.pt = PT;
+    params.seed = std::random_device{}();
 
     Mobso optimizer(problem, params);
     return optimizer.run();
@@ -144,10 +38,10 @@ static std::vector<Solution> RunOptimization(const Problem& problem)
 static void DrawText(
     sf::RenderWindow& window,
     sf::Font& font,
-    const std::string& text,
+    const sf::String& text,
     float x,
     float y,
-    unsigned int size = 22)
+    unsigned int size = 20)
 {
     sf::Text drawable;
     drawable.setFont(font);
@@ -155,14 +49,20 @@ static void DrawText(
     drawable.setCharacterSize(size);
     drawable.setFillColor(sf::Color::Black);
     drawable.setPosition(x, y);
+
     window.draw(drawable);
+}
+
+static sf::String Utf8(const std::string& text)
+{
+    return sf::String::fromUtf8(text.begin(), text.end());
 }
 
 void Visualizer::Show()
 {
     sf::RenderWindow window(
         sf::VideoMode(1200, 700),
-        "Home Health Care Scheduler"
+        Utf8("ЗАДАЧА ПЛАНИРОВАНИЯ СЛУЖБ ДОМАШНЕГО МЕДИЦИНСКОГО ОБСЛУЖИВАНИЯ")
     );
 
     window.setFramerateLimit(60);
@@ -178,12 +78,13 @@ void Visualizer::Show()
     ScreenState state = ScreenState::FileInput;
 
     std::string filename;
-    std::string status = "Enter file name and press Enter";
+    sf::String status = Utf8("Введите название файла и нажмите Enter");
 
     std::optional<Problem> problem;
     std::vector<Solution> paretoFront;
 
     int selectedSolution = 0;
+    int selectedRouteIndex = -1;
 
     while (window.isOpen())
     {
@@ -228,18 +129,19 @@ void Visualizer::Show()
                         state = ScreenState::Calculating;
 
                         window.clear(sf::Color::White);
-                        DrawText(window, font, "Calculating...", 480.f, 320.f, 32);
+                        DrawText(window, font, Utf8("Подсчёт результатов..."), 440.f, 320.f, 32);
                         window.display();
 
                         problem = ProblemLoader::LoadFromFile(filename);
                         paretoFront = RunOptimization(*problem);
 
                         selectedSolution = 0;
+                        selectedRouteIndex = -1;
                         state = ScreenState::Results;
                     }
                     catch (const std::exception& e)
                     {
-                        status = std::string("Error: ") + e.what();
+                        status = Utf8("Ошибка: ") + Utf8(e.what());
                         state = ScreenState::FileInput;
                     }
                 }
@@ -249,18 +151,47 @@ void Visualizer::Show()
                     if (event.key.code == sf::Keyboard::Right &&
                         !paretoFront.empty())
                     {
-                        selectedSolution =
-                            (selectedSolution + 1) %
-                            static_cast<int>(paretoFront.size());
+                        if (event.key.shift && problem.has_value())
+                        {
+                            Decoder decoder(*problem);
+                            std::vector<Route> routes = decoder.Decode(paretoFront[selectedSolution]);
+
+                            if (!routes.empty())
+                            {
+                                selectedRouteIndex = (selectedRouteIndex + 1) % static_cast<int>(routes.size());
+                            }
+                        }
+                        else
+                        {
+                            selectedSolution = (selectedSolution + 1) % static_cast<int>(paretoFront.size());
+                            selectedRouteIndex = -1;
+                        }
                     }
 
-                    if (event.key.code == sf::Keyboard::Left &&
-                        !paretoFront.empty())
+                    if (event.key.code == sf::Keyboard::Left && !paretoFront.empty())
                     {
-                        selectedSolution =
-                            (selectedSolution - 1 +
-                             static_cast<int>(paretoFront.size())) %
-                            static_cast<int>(paretoFront.size());
+                        if (event.key.shift && problem.has_value())
+                        {
+                            Decoder decoder(*problem);
+                            std::vector<Route> routes = decoder.Decode(paretoFront[selectedSolution]);
+
+                            if (!routes.empty())
+                            {
+                                selectedRouteIndex =
+                                    (selectedRouteIndex - 1 +
+                                     static_cast<int>(routes.size())) %
+                                    static_cast<int>(routes.size());
+                            }
+                        }
+                        else
+                        {
+                            selectedSolution =
+                                (selectedSolution - 1 +
+                                 static_cast<int>(paretoFront.size())) %
+                                static_cast<int>(paretoFront.size());
+
+                            selectedRouteIndex = -1;
+                        }
                     }
 
                     if (event.key.code == sf::Keyboard::L)
@@ -268,20 +199,29 @@ void Visualizer::Show()
                         filename.clear();
                         paretoFront.clear();
                         problem.reset();
-                        status = "Enter file name and press Enter";
+
+                        status = Utf8("Введите название файла и нажмите Enter");
+
+                        selectedSolution = 0;
+                        selectedRouteIndex = -1;
+
                         state = ScreenState::FileInput;
                     }
 
-                    if (event.key.code == sf::Keyboard::R && problem.has_value())
+                    if (event.key.code == sf::Keyboard::R &&
+                        problem.has_value())
                     {
                         state = ScreenState::Calculating;
 
                         window.clear(sf::Color::White);
-                        DrawText(window, font, "Recalculating...", 460.f, 320.f, 32);
+                        DrawText(window, font, Utf8("Пересчёт результатов..."), 430.f, 320.f, 32);
                         window.display();
 
                         paretoFront = RunOptimization(*problem);
+
                         selectedSolution = 0;
+                        selectedRouteIndex = -1;
+
                         state = ScreenState::Results;
                     }
                 }
@@ -295,6 +235,8 @@ void Visualizer::Show()
                 selectedSolution =
                     (selectedSolution + 1) %
                     static_cast<int>(paretoFront.size());
+
+                selectedRouteIndex = -1;
             }
         }
 
@@ -302,9 +244,9 @@ void Visualizer::Show()
 
         if (state == ScreenState::FileInput)
         {
-            DrawText(window, font, "Home Health Care Scheduler", 360.f, 80.f, 34);
+            DrawText(window, font, Utf8("Планирование служб домашнего медицинского обслуживания"), 60.f, 80.f, 34);
 
-            DrawText(window, font, "Input file:", 250.f, 220.f, 24);
+            DrawText(window, font, Utf8("Входной файл: "), 250.f, 220.f, 24);
 
             sf::RectangleShape inputBox(sf::Vector2f(600.f, 45.f));
             inputBox.setPosition(250.f, 260.f);
@@ -317,32 +259,34 @@ void Visualizer::Show()
 
             DrawText(window, font, status, 250.f, 330.f, 20);
 
-            DrawText(window, font, "Example: problem.txt", 250.f, 390.f, 20);
-            DrawText(window, font, "Enter - load and solve", 250.f, 430.f, 20);
-            DrawText(window, font, "Esc - exit", 250.f, 470.f, 20);
+            DrawText(window, font, Utf8("Пример: problem.txt"), 250.f, 390.f, 20);
+
+            DrawText(window, font, Utf8("Esc - выход"), 250.f, 430.f, 20);
         }
 
         if (state == ScreenState::Calculating)
         {
-            DrawText(window, font, "Calculating...", 480.f, 320.f, 32);
+            DrawText(window, font, Utf8("Подсчёт результатов..."), 440.f, 320.f, 32);
         }
 
         if (state == ScreenState::Results)
         {
             if (problem.has_value() && !paretoFront.empty())
             {
-                DrawMap(window, *problem, paretoFront[selectedSolution]);
+                DrawMap(window, *problem, paretoFront[selectedSolution], selectedRouteIndex, font);
                 DrawParetoFront(window, paretoFront);
 
                 const Solution& solution = paretoFront[selectedSolution];
 
-                DrawText(window, font, "Results", 820.f, 370.f, 26);
+                DrawText(window, font, Utf8("Результаты"), 820.f, 370.f, 26);
 
                 DrawText(
                     window,
                     font,
-                    "Solution: " + std::to_string(selectedSolution + 1) +
-                    " / " + std::to_string(paretoFront.size()),
+                    Utf8("Решение: ") +
+                    std::to_string(selectedSolution + 1) +
+                    " / " +
+                    std::to_string(paretoFront.size()),
                     820.f,
                     410.f,
                     20
@@ -351,7 +295,7 @@ void Visualizer::Show()
                 DrawText(
                     window,
                     font,
-                    "Service cost: " +
+                    Utf8("Цена обслуживания: ") +
                     std::to_string(solution.GetObjectives().serviceCost),
                     820.f,
                     445.f,
@@ -361,29 +305,107 @@ void Visualizer::Show()
                 DrawText(
                     window,
                     font,
-                    "Delay cost: " +
+                    Utf8("Цена задержек: ") +
                     std::to_string(solution.GetObjectives().delayCost),
                     820.f,
                     480.f,
                     20
                 );
 
-                DrawText(window, font, "Left / Right - switch solution", 820.f, 540.f, 18);
-                DrawText(window, font, "Mouse click - next solution", 820.f, 565.f, 18);
-                DrawText(window, font, "R - recalculate", 820.f, 590.f, 18);
-                DrawText(window, font, "L - load another file", 820.f, 615.f, 18);
-                DrawText(window, font, "Esc - exit", 820.f, 640.f, 18);
+                DrawText(
+                    window,
+                    font,
+                    Utf8("◀ / ▶ - переключить решение"),
+                    820.f,
+                    535.f,
+                    18
+                );
+
+                DrawText(
+                    window,
+                    font,
+                    Utf8("Shift + ◀ / ▶ - маршрут специалиста"),
+                    820.f,
+                    560.f,
+                    18
+                );
+
+                DrawText(
+                    window,
+                    font,
+                    Utf8("R - пересчитать решение"),
+                    820.f,
+                    590.f,
+                    18
+                );
+
+                DrawText(
+                    window,
+                    font,
+                    Utf8("L - загрузить другой файл"),
+                    820.f,
+                    615.f,
+                    18
+                );
+
+                DrawText(
+                    window,
+                    font,
+                    Utf8("Esc - выход"),
+                    820.f,
+                    640.f,
+                    18
+                );
+
+                if (selectedRouteIndex != -1)
+                {
+                    Decoder decoder(*problem);
+                    std::vector<Route> routes =
+                        decoder.Decode(paretoFront[selectedSolution]);
+
+                    if (selectedRouteIndex <
+                        static_cast<int>(routes.size()))
+                    {
+                        DrawText(
+                            window,
+                            font,
+                            Utf8("Выбран специалист: ") +
+                            std::to_string(
+                                routes[selectedRouteIndex].GetCaregiverId()
+                            ),
+                            820.f,
+                            665.f,
+                            18
+                        );
+                    }
+                }
             }
             else
             {
-                DrawText(window, font, "No solutions found", 450.f, 320.f, 30);
-                DrawText(window, font, "Press L to load another file", 430.f, 370.f, 22);
+                DrawText(
+                    window,
+                    font,
+                    Utf8("Ни одного решения не нашлось"),
+                    450.f,
+                    320.f,
+                    30
+                );
+
+                DrawText(
+                    window,
+                    font,
+                    Utf8("Нажмите L чтобы загрузить другой файл"),
+                    430.f,
+                    370.f,
+                    22
+                );
             }
         }
 
         window.display();
     }
 }
+
 sf::Vector2f Visualizer::ScalePoint(
     double x, double y, double minX,
     double maxX, double minY, double maxY,
@@ -397,8 +419,69 @@ sf::Vector2f Visualizer::ScalePoint(
     return sf::Vector2f(sx, sy);
 }
 
-void Visualizer::DrawMap(sf::RenderWindow& window,
-    const Problem& problem, const Solution& solution)
+void Visualizer::DrawParetoFront(
+    sf::RenderWindow& window,
+    const std::vector<Solution>& paretoFront)
+{
+    const float left = 820.f;
+    const float top = 80.f;
+    const float width = 320.f;
+    const float height = 260.f;
+
+    if (paretoFront.empty())
+    {
+        return;
+    }
+
+    double minService = std::numeric_limits<double>::max();
+    double maxService = std::numeric_limits<double>::lowest();
+    double minDelay = std::numeric_limits<double>::max();
+    double maxDelay = std::numeric_limits<double>::lowest();
+
+    for (const Solution& solution : paretoFront)
+    {
+        minService = std::min(minService, solution.GetObjectives().serviceCost);
+        maxService = std::max(maxService, solution.GetObjectives().serviceCost);
+        minDelay = std::min(minDelay, solution.GetObjectives().delayCost);
+        maxDelay = std::max(maxDelay, solution.GetObjectives().delayCost);
+    }
+
+    sf::RectangleShape border(sf::Vector2f(width, height));
+    border.setPosition(left, top);
+    border.setFillColor(sf::Color::Transparent);
+    border.setOutlineColor(sf::Color::Black);
+    border.setOutlineThickness(2.f);
+    window.draw(border);
+
+    for (const Solution& solution : paretoFront)
+    {
+        sf::Vector2f pointPosition = ScalePoint(
+            solution.GetObjectives().delayCost,
+            solution.GetObjectives().serviceCost,
+            minDelay,
+            maxDelay,
+            minService,
+            maxService,
+            left,
+            top,
+            width,
+            height
+        );
+
+        sf::CircleShape point(5.f);
+        point.setOrigin(5.f, 5.f);
+        point.setPosition(pointPosition);
+        point.setFillColor(sf::Color::Red);
+        window.draw(point);
+    }
+}
+
+void Visualizer::DrawMap(
+    sf::RenderWindow& window,
+    const Problem& problem,
+    const Solution& solution,
+    int selectedRouteIndex,
+    sf::Font& font)
 {
     const float left = 40.f;
     const float top = 40.f;
@@ -443,7 +526,6 @@ void Visualizer::DrawMap(sf::RenderWindow& window,
 
     std::vector<sf::Color> colors =
     {
-        sf::Color::Red,
         sf::Color::Blue,
         sf::Color::Green,
         sf::Color::Magenta,
@@ -454,12 +536,24 @@ void Visualizer::DrawMap(sf::RenderWindow& window,
 
     for (size_t r = 0; r < routes.size(); ++r)
     {
+        if (selectedRouteIndex != -1 &&
+            static_cast<int>(r) != selectedRouteIndex)
+        {
+            continue;
+        }
+
         const Route& route = routes[r];
 
-        if (route.GetCustomers().empty()) continue;
+        if (route.GetCustomers().empty())
+        {
+            continue;
+        }
 
-        const Caregiver& caregiver = problem.GetCaregiverById(route.GetCaregiverId());
-        const CareCenter& center = problem.GetCenterById(caregiver.GetCenterId());
+        const Caregiver& caregiver =
+            problem.GetCaregiverById(route.GetCaregiverId());
+
+        const CareCenter& center =
+            problem.GetCenterById(caregiver.GetCenterId());
 
         sf::Color color = colors[r % colors.size()];
 
@@ -468,7 +562,8 @@ void Visualizer::DrawMap(sf::RenderWindow& window,
 
         for (int customerId : route.GetCustomers())
         {
-            const Customer& customer = problem.GetCustomerById(customerId);
+            const Customer& customer =
+                problem.GetCustomerById(customerId);
 
             sf::Vector2f current = ScalePoint(customer.GetX(), customer.GetY(),
                 minX, maxX, minY, maxY, left, top, width, height );
@@ -480,7 +575,6 @@ void Visualizer::DrawMap(sf::RenderWindow& window,
             };
 
             window.draw(line, 2, sf::Lines);
-
             previous = current;
         }
 
@@ -501,11 +595,20 @@ void Visualizer::DrawMap(sf::RenderWindow& window,
         sf::Vector2f p = ScalePoint(center.GetX(), center.GetY(),
                                     minX, maxX, minY, maxY, left, top, width, height);
 
-        sf::RectangleShape square(sf::Vector2f(16.f, 16.f));
-        square.setOrigin(8.f, 8.f);
+        sf::RectangleShape square(sf::Vector2f(18.f, 18.f));
+        square.setOrigin(9.f, 9.f);
         square.setPosition(p);
-        square.setFillColor(sf::Color::Black);
+        square.setFillColor(sf::Color::Red);
         window.draw(square);
+
+        DrawText(
+            window,
+            font,
+            std::to_string(center.GetId()),
+            p.x + 10.f,
+            p.y - 12.f,
+            16
+        );
     }
 
     for (const auto& customer : problem.customers())
@@ -521,48 +624,20 @@ void Visualizer::DrawMap(sf::RenderWindow& window,
         circle.setOutlineThickness(2.f);
         window.draw(circle);
     }
-}
 
-void Visualizer::DrawParetoFront(sf::RenderWindow& window, const std::vector<Solution>& paretoFront)
-{
-    const float left = 820.f;
-    const float top = 80.f;
-    const float width = 320.f;
-    const float height = 260.f;
-
-    if (paretoFront.empty()) return;
-
-    double minService = std::numeric_limits<double>::max();
-    double maxService = std::numeric_limits<double>::lowest();
-    double minDelay = std::numeric_limits<double>::max();
-    double maxDelay = std::numeric_limits<double>::lowest();
-
-    for (const Solution& s : paretoFront)
+    if (selectedRouteIndex != -1 &&
+        selectedRouteIndex < static_cast<int>(routes.size()))
     {
-        minService = std::min(minService, s.GetObjectives().serviceCost);
-        maxService = std::max(maxService, s.GetObjectives().serviceCost);
-        minDelay = std::min(minDelay, s.GetObjectives().delayCost);
-        maxDelay = std::max(maxDelay, s.GetObjectives().delayCost);
-    }
+        const Route& route = routes[selectedRouteIndex];
 
-    sf::RectangleShape border(sf::Vector2f(width, height));
-    border.setPosition(left, top);
-    border.setFillColor(sf::Color::Transparent);
-    border.setOutlineColor(sf::Color::Black);
-    border.setOutlineThickness(2.f);
-    window.draw(border);
-
-    for (const Solution& s : paretoFront)
-    {
-        sf::Vector2f p = ScalePoint(s.GetObjectives().delayCost,
-            s.GetObjectives().serviceCost, minDelay, maxDelay,
-            minService, maxService, left, top, width, height);
-
-        sf::CircleShape point(5.f);
-        point.setOrigin(5.f, 5.f);
-        point.setPosition(p);
-        point.setFillColor(sf::Color::Red);
-        window.draw(point);
+        DrawText(
+            window,
+            font,
+            Utf8("Показан маршрут специалиста: ") +
+            std::to_string(route.GetCaregiverId()),
+            50.f,
+            650.f,
+            18
+        );
     }
 }
-

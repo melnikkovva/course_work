@@ -31,13 +31,13 @@
     <ClCompile Include="C:\Users\melni\Desktop\course_work\Evaluator\Evaluator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\melni\Desktop\course_work\ProblemLoader\ProblemLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\melni\Desktop\course_work\ParetoTools\ParetoTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\melni\Desktop\course_work\Mobso\Mobso.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="C:\Users\melni\Desktop\course_work\Tests\BasicTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\melni\Desktop\course_work\Tests\TestBigProblem.cpp">

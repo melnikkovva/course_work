@@ -38,7 +38,7 @@ public:
 
     void AddCenter(const CareCenter& center);
     void RemoveCenterById(int id);
-    
+
 private:
     std::vector<Customer> m_customers;
     std::vector<CareCenter> m_centers;
@@ -46,6 +46,4 @@ private:
 
     int m_maxWorkload{};
     double m_delayPenalty{};
-
-
 };

@@ -7,18 +7,19 @@
 #include "../Problem/Problem.h"
 #include "../Route/Route.h"
 #include "../Solution/Solution.h"
+#include "../constants.h"
 
 class Mobso 
 {
 public:
     struct Params 
     {
-        int populationSize = 10;
-        int maxEvaluations = 10000;
-        double pg = 0.8;
-        double po = 0.6;
-        double pt = 0.4;
-        std::uint32_t seed = std::random_device{}();
+        int populationSize = POPULATION_SIZE;
+        int maxEvaluations = MAX_EVALUATIONS;
+        double pg = PG;
+        double po = PO;
+        double pt = PT;
+        std::uint32_t seed = RANDOM_SEED;
     };
 
     Mobso(const Problem& problem, Params params);
@@ -30,8 +31,6 @@ private:
     std::mt19937 m_rng;
     Evaluator m_evaluator;
     Decoder m_decoder;
-
-    static constexpr double InfeasiblePenalty = 1e9;
     std::vector<Solution> InitializePopulation();
     Solution MakeFeasibleInitialSolution();
     Solution MakeRandomInitialSolution();
@@ -46,8 +45,6 @@ private:
     void Mobso::LogPopulation(
     const std::string& title,
     const std::vector<Solution>& population) const;
-    double Random01();
-    int RandomIndex(size_t size);
     static std::vector<int> RouteDifference(const Route& left, const Route& right);
     static void RemoveCustomers(std::vector<Route>& routes, const std::vector<int>& customers);
 };

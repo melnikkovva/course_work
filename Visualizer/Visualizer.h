@@ -22,7 +22,9 @@ private:
     static void DrawMap(
         sf::RenderWindow& window,
         const Problem& problem,
-        const Solution& solution
+        const Solution& solution,
+        int selectedRouteIndex,
+        sf::Font& font
     );
 
     static void DrawParetoFront(

@@ -169,11 +169,9 @@ double ParetoTools::ObjectiveValue(const Solution& solution, bool serviceCostObj
         : solution.GetObjectives().delayCost;
 }
 
-void ParetoTools::AddCrowdingDistanceByObjective(
-    std::vector<Solution>& population,
-    const std::vector<int>& front,
-    bool serviceCostObjective) 
-    {
+void ParetoTools::AddCrowdingDistanceByObjective(std::vector<Solution>& population,
+    const std::vector<int>& front, bool serviceCostObjective) 
+{
     std::vector<int> sorted = front;
 
     std::sort(sorted.begin(), sorted.end(), [&](int left, int right) 
