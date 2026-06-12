@@ -16,11 +16,11 @@ public:
     double GetBaseRate() const;
 
 private:
-    int m_id{};
-    double m_x{};
-    double m_y{};
-    int m_requiredSkill{};
-    double m_serviceTime{};
-    double m_appointmentTime{};
-    double m_baseRate{};
+    int m_id = 0;
+    double m_x = 0;
+    double m_y = 0;
+    int m_requiredSkill = 0;
+    double m_serviceTime = 0;
+    double m_appointmentTime = 0;
+    double m_baseRate = 0;
 };

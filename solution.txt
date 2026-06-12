@@ -1,0 +1,404 @@
+Solution
+
+Service cost = 9.24135e+06
+Delay cost = 334547
+
+Caregiver 10
+Route: 254 271 610 715 397 904 517 46 201 35 
+
+Caregiver 11
+Route: 192 248 474 292 282 188 570 289 539 81 
+
+Caregiver 12
+Route: 193 96 221 789 708 566 925 82 191 404 
+
+Caregiver 13
+Route: 182 588 632 446 843 32 145 321 311 508 
+
+Caregiver 14
+Route: 783 881 679 335 840 712 230 611 27 92 
+
+Caregiver 15
+Route: 151 545 685 436 599 548 698 931 387 901 
+
+Caregiver 16
+Route: 380 237 813 279 991 589 392 294 805 273 
+
+Caregiver 17
+Route: 85 239 586 542 563 207 360 774 657 629 
+
+Caregiver 18
+Route: 55 178 630 662 866 667 623 756 888 504 
+
+Caregiver 19
+Route: 634 1 177 711 725 553 330 717 737 394 
+
+Caregiver 20
+Route: 424 940 141 776 637 597 528 399 324 42 
+
+Caregiver 21
+Route: 552 461 347 349 892 512 883 914 99 827 
+
+Caregiver 22
+Route: 561 487 938 22 821 60 
+
+Caregiver 23
+Route: 
+
+Caregiver 24
+Route: 
+
+Caregiver 25
+Route: 803 250 103 855 275 202 718 759 830 727 
+
+Caregiver 26
+Route: 540 105 562 986 988 574 497 320 355 513 
+
+Caregiver 27
+Route: 677 470 533 142 25 645 451 518 807 179 
+
+Caregiver 28
+Route: 
+
+Caregiver 29
+Route: 582 400 923 751 832 414 333 536 464 130 
+
+Caregiver 30
+Route: 242 956 521 856 298 652 146 906 312 723 
+
+Caregiver 31
+Route: 453 214 401 663 731 336 267 575 363 217 
+
+Caregiver 32
+Route: 538 112 583 924 158 524 761 808 408 601 
+
+Caregiver 33
+Route: 160 858 316 529 577 66 231 631 666 820 
+
+Caregiver 34
+Route: 
+
+Caregiver 35
+Route: 337 861 928 266 675 769 565 383 420 428 
+
+Caregiver 36
+Route: 593 851 276 440 302 101 370 772 9 739 
+
+Caregiver 37
+Route: 729 407 459 839 125 4 102 706 838 738 
+
+Caregiver 38
+Route: 62 20 162 622 194 31 280 8 779 665 
+
+Caregiver 39
+Route: 
+
+Caregiver 40
+Route: 
+
+Caregiver 41
+Route: 
+
+Caregiver 42
+Route: 
+
+Caregiver 43
+Route: 
+
+Caregiver 44
+Route: 169 415 479 822 466 314 326 113 154 692 
+
+Caregiver 45
+Route: 448 161 494 341 974 484 123 104 664 519 
+
+Caregiver 46
+Route: 617 47 946 734 155 850 386 489 841 951 
+
+Caregiver 47
+Route: 625 972 890 559 770 303 697 509 836 185 
+
+Caregiver 48
+Route: 385 525 12 754 41 702 482 973 703 307 
+
+Caregiver 49
+Route: 173 110 607 30 36 817 990 225 730 792 
+
+Caregiver 50
+Route: 452 354 868 295 854 501 775 204 223 742 
+
+Caregiver 51
+Route: 
+
+Caregiver 52
+Route: 744 741 701 642 181 691 235 119 493 389 
+
+Caregiver 53
+Route: 
+
+Caregiver 54
+Route: 184 886 187 957 616 568 747 802 442 373 
+
+Caregiver 55
+Route: 56 547 257 959 985 90 917 137 339 896 
+
+Caregiver 56
+Route: 969 977 74 488 878 69 396 600 59 
+
+Caregiver 57
+Route: 6 621 765 
+
+Caregiver 58
+Route: 148 753 672 544 226 816 585 535 907 515 
+
+Caregiver 59
+Route: 964 556 945 39 238 393 409 412 965 356 
+
+Caregiver 60
+Route: 
+
+Caregiver 61
+Route: 107 961 491 976 898 376 136 463 874 109 
+
+Caregiver 62
+Route: 
+
+Caregiver 63
+Route: 378 680 809 997 236 998 269 696 319 93 
+
+Caregiver 64
+Route: 418 948 543 594 117 922 345 983 673 942 
+
+Caregiver 65
+Route: 857 443 978 241 299 84 
+
+Caregiver 66
+Route: 709 263 587 17 149 638 233 377 498 215 
+
+Caregiver 67
+Route: 819 891 746 343 620 315 116 255 317 555 
+
+Caregiver 68
+Route: 
+
+Caregiver 69
+Route: 573 791 106 287 495 391 590 265 935 785 
+
+Caregiver 70
+Route: 
+
+Caregiver 71
+Route: 609 865 500 527 54 815 140 981 197 419 
+
+Caregiver 72
+Route: 309 7 86 966 168 626 604 14 745 894 
+
+Caregiver 73
+Route: 219 921 644 757 537 122 605 531 591 411 
+
+Caregiver 74
+Route: 
+
+Caregiver 75
+Route: 64 159 18 784 374 992 382 262 75 118 
+
+Caregiver 76
+Route: 
+
+Caregiver 77
+Route: 108 277 902 999 614 486 325 786 186 558 
+
+Caregiver 78
+Route: 
+
+Caregiver 79
+Route: 
+
+Caregiver 80
+Route: 346 636 472 476 937 421 639 641 449 511 
+
+Caregiver 81
+Route: 
+
+Caregiver 82
+Route: 764 362 733 38 887 627 381 73 199 728 
+
+Caregiver 83
+Route: 
+
+Caregiver 84
+Route: 353 918 422 37 249 434 13 804 131 823 
+
+Caregiver 85
+Route: 369 916 926 860 170 941 781 800 290 572 
+
+Caregiver 86
+Route: 286 660 352 647 258 270 584 126 811 853 
+
+Caregiver 87
+Route: 274 338 190 52 996 980 797 863 213 124 
+
+Caregiver 88
+Route: 430 932 245 884 304 912 366 831 439 458 
+
+Caregiver 89
+Route: 749 261 1000 138 175 975 864 206 947 437 
+
+Caregiver 90
+Route: 752 704 212 89 651 40 28 893 33 777 
+
+Caregiver 91
+Route: 796 465 963 425 247 44 885 65 48 682 
+
+Caregiver 92
+Route: 927 100 164 480 968 34 668 128 936 899 
+
+Caregiver 93
+Route: 780 879 686 410 934 485 115 15 322 810 
+
+Caregiver 94
+Route: 357 51 943 433 760 398 615 818 301 
+
+Caregiver 95
+Route: 457 546 78 766 
+
+Caregiver 96
+Route: 203 967 57 367 441 379 281 80 705 748 
+
+Caregiver 97
+Route: 423 332 143 350 653 735 674 438 633 640 
+
+Caregiver 98
+Route: 402 567 156 272 172 516 240 76 801 806 
+
+Caregiver 99
+Route: 435 67 699 284 61 467 10 671 995 129 
+
+Caregiver 100
+Route: 949 368 473 2 837 829 750 318 252 514 
+
+Caregiver 101
+Route: 305 268 499 867 222 646 445 63 848 782 
+
+Caregiver 102
+Route: 824 259 308 795 196 897 602 771 778 919 
+
+Caregiver 103
+Route: 244 246 79 429 846 506 799 49 310 127 
+
+Caregiver 104
+Route: 909 522 58 905 
+
+Caregiver 105
+Route: 
+
+Caregiver 106
+Route: 661 87 714 24 45 950 882 767 176 50 
+
+Caregiver 107
+Route: 834 903 426 153 171 743 842 478 984 875 
+
+Caregiver 108
+Route: 
+
+Caregiver 109
+Route: 595 11 707 724 205 676 68 444 580 327 
+
+Caregiver 110
+Route: 507 29 794 758 431 598 825 296 643 979 
+
+Caregiver 111
+Route: 
+
+Caregiver 112
+Route: 889 152 406 952 844 492 678 720 732 88 
+
+Caregiver 113
+Route: 
+
+Caregiver 114
+Route: 
+
+Caregiver 115
+Route: 195 655 297 334 121 21 211 740 688 95 
+
+Caregiver 116
+Route: 713 251 114 669 23 551 329 285 260 920 
+
+Caregiver 117
+Route: 944 200 395 987 683 291 579 390 873 532 
+
+Caregiver 118
+Route: 635 77 768 502 788 413 971 70 606 710 
+
+Caregiver 119
+Route: 929 224 826 736 351 340 180 681 649 628 
+
+Caregiver 120
+Route: 624 375 288 755 549 293 833 670 210 253 
+
+Caregiver 121
+Route: 43 869 520 913 960 763 348 612 358 933 
+
+Caregiver 122
+Route: 845 719 134 505 773 510 650 953 812 503 
+
+Caregiver 123
+Route: 417 139 462 790 183 619 166 365 814 432 
+
+Caregiver 124
+Route: 541 189 455 5 208 328 97 659 550 592 
+
+Caregiver 125
+Route: 342 496 603 982 900 384 798 
+
+Caregiver 126
+Route: 264 132 962 344 876 372 216 694 618 371 
+
+Caregiver 127
+Route: 658 481 227 871 144 490 877 447 880 477 
+
+Caregiver 128
+Route: 405 403 157 955 895 19 283 306 695 954 
+
+Caregiver 129
+Route: 456 554 721 111 364 174 608 648 135 722 
+
+Caregiver 130
+Route: 198 232 569 716 120 557 689 26 693 908 
+
+Caregiver 131
+Route: 847 313 147 915 911 361 862 16 278 581 
+
+Caregiver 132
+Route: 828 220 359 726 483 613 994 910 388 690 
+
+Caregiver 133
+Route: 970 560 872 98 256 700 3 523 571 859 
+
+Caregiver 134
+Route: 
+
+Caregiver 135
+Route: 228 72 787 163 939 576 684 165 209 427 
+
+Caregiver 136
+Route: 150 234 835 94 323 468 83 852 218 530 
+
+Caregiver 137
+Route: 331 849 656 526 654 416 596 958 71 687 
+
+Caregiver 138
+Route: 469 243 91 167 762 471 534 793 454 450 
+
+Caregiver 139
+Route: 930 133 
+
+Caregiver 140
+Route: 870 993 475 989 564 229 578 300 53 460 
+
+Caregiver 141
+Route: 
+
+Caregiver 142
+Route: 
+

@@ -9,8 +9,8 @@ public:
     double GetY() const;
     int GetCapacity() const;
 private:
-    int m_id{};
-    double m_x{};
-    double m_y{};
-    int m_capacity{};
+    int m_id = 0;
+    double m_x = 0;
+    double m_y = 0;
+    int m_capacity = 0;
 };

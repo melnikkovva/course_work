@@ -51,30 +51,6 @@ std::vector<Solution> Mobso::InitializePopulation()
     return population;
 }
 
-Solution Mobso::MakeRandomInitialSolution()
-{
-    std::vector<Route> routes;
-
-    for (const auto& caregiver : m_problem.caregivers())
-    {
-        routes.emplace_back(caregiver.GetId());
-    }
-
-    std::shuffle(routes.begin(), routes.end(), m_rng);
-
-    std::vector<int> customers(m_problem.customerCount());
-    std::iota(customers.begin(), customers.end(), 1);
-    std::shuffle(customers.begin(), customers.end(), m_rng);
-
-    for (int customerId : customers)
-    {
-        int routeId = RandomIndex(routes.size(), m_rng);
-        routes[routeId].GetCustomers().push_back(customerId);
-    }
-
-    return m_decoder.Encode(routes);
-}
-
 const Route& FindRouteByCaregiver(const std::vector<Route>& routes, int caregiverId)
 {
     auto it = std::find_if(routes.begin(), routes.end(), [caregiverId](const Route& route)
@@ -102,7 +78,6 @@ std::vector<int> CenterIds(const Problem& problem)
     return result;
 }
 
-//TODO разбить
 Solution Mobso::MakeFeasibleInitialSolution()
 {
     std::vector<Route> routes;
@@ -226,7 +201,6 @@ void Mobso::RemoveInfeasible(std::vector<Solution>& solutions) const
     );
 }
 
-//TODO decompose
 std::vector<Solution> Mobso::MakeChildren(std::vector<Solution> population)
 {
     auto fronts = ParetoTools::AssignRanks(population);

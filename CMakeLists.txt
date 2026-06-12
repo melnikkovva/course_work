@@ -18,7 +18,7 @@ set(SOURCES
     Solution/Solution.cpp
     Decoder/Decoder.cpp
     Evaluator/Evaluator.cpp
-    ProblemLoader/ProblemLoader.cpp
+    ProblemIO/ProblemIO.cpp
     ParetoTools/ParetoTools.cpp
     Mobso/Mobso.cpp
     Tests/TestBigProblem.cpp

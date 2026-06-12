@@ -13,6 +13,6 @@ public:
     bool IsEmpty() const;
     int GetSize() const;
 private:
-    int m_caregiverId{};
+    int m_caregiverId = 0;
     std::vector<int> m_customers;
 };

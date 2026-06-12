@@ -10,7 +10,7 @@
 #include "../CareGiver/CareGiver.h"
 #include "../Customer/Customer.h"
 #include "../Mobso/Mobso.h"
-#include "../ProblemLoader/ProblemLoader.h"
+#include "../ProblemIO/ProblemIO.h"
 #include <optional>
 
 enum class ScreenState
@@ -132,7 +132,7 @@ void Visualizer::Show()
                         DrawText(window, font, Utf8("Подсчёт результатов..."), 440.f, 320.f, 32);
                         window.display();
 
-                        problem = ProblemLoader::LoadFromFile(filename);
+                        problem = ProblemIO::LoadFromFile(filename);
                         paretoFront = RunOptimization(*problem);
 
                         selectedSolution = 0;
@@ -224,6 +224,15 @@ void Visualizer::Show()
 
                         state = ScreenState::Results;
                     }
+
+                    if (event.key.code == sf::Keyboard::E)
+                    {
+                        ProblemIO::SaveSolution(
+                            *problem,
+                            paretoFront[selectedSolution],
+                            "solution.txt"
+                        );
+                    }
                 }
             }
 
@@ -273,6 +282,16 @@ void Visualizer::Show()
         {
             if (problem.has_value() && !paretoFront.empty())
             {
+                
+                DrawText(
+                    window,
+                    font,
+                    Utf8("E - экспорт решения"),
+                    820.f,
+                    625.f,
+                    18
+                );
+
                 DrawMap(window, *problem, paretoFront[selectedSolution], selectedRouteIndex, font);
                 DrawParetoFront(window, paretoFront);
 
@@ -317,7 +336,7 @@ void Visualizer::Show()
                     font,
                     Utf8("◀ / ▶ - переключить решение"),
                     820.f,
-                    535.f,
+                    520.f,
                     18
                 );
 
@@ -326,7 +345,7 @@ void Visualizer::Show()
                     font,
                     Utf8("Shift + ◀ / ▶ - маршрут специалиста"),
                     820.f,
-                    560.f,
+                    545.f,
                     18
                 );
 
@@ -335,7 +354,7 @@ void Visualizer::Show()
                     font,
                     Utf8("R - пересчитать решение"),
                     820.f,
-                    590.f,
+                    570.f,
                     18
                 );
 
@@ -344,7 +363,7 @@ void Visualizer::Show()
                     font,
                     Utf8("L - загрузить другой файл"),
                     820.f,
-                    615.f,
+                    600.f,
                     18
                 );
 
@@ -353,7 +372,7 @@ void Visualizer::Show()
                     font,
                     Utf8("Esc - выход"),
                     820.f,
-                    640.f,
+                    650.f,
                     18
                 );
 
@@ -363,18 +382,43 @@ void Visualizer::Show()
                     std::vector<Route> routes =
                         decoder.Decode(paretoFront[selectedSolution]);
 
-                    if (selectedRouteIndex <
-                        static_cast<int>(routes.size()))
+                    if (selectedRouteIndex < static_cast<int>(routes.size()))
                     {
+                        const Route& route = routes[selectedRouteIndex];
+
+                        std::string path;
+
+                        for (size_t i = 0; i < route.GetCustomers().size(); ++i)
+                        {
+                            if (i > 0)
+                            {
+                                path += " - ";
+                            }
+
+                            path += std::to_string(route.GetCustomers()[i]);
+                        }
+
+                        if (path.empty())
+                        {
+                            path = "нет клиентов";
+                        }
+
                         DrawText(
                             window,
                             font,
                             Utf8("Выбран специалист: ") +
-                            std::to_string(
-                                routes[selectedRouteIndex].GetCaregiverId()
-                            ),
+                            std::to_string(route.GetCaregiverId()),
                             820.f,
                             665.f,
+                            16
+                        );
+
+                        DrawText(
+                            window,
+                            font,
+                            Utf8("Маршрут: ") + Utf8(path),
+                            50.f,
+                            680.f,
                             18
                         );
                     }

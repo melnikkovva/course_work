@@ -31,7 +31,7 @@
     <ClCompile Include="C:\Users\melni\Desktop\course_work\Evaluator\Evaluator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\melni\Desktop\course_work\ProblemLoader\ProblemLoader.cpp">
+    <ClCompile Include="C:\Users\melni\Desktop\course_work\ProblemIO\ProblemIO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\melni\Desktop\course_work\ParetoTools\ParetoTools.cpp">
